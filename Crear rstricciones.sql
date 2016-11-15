@@ -8,13 +8,12 @@ use Ejemplos
 create table DatosRestrictivos
 (
 ID SmallInt Not NULL IDENTITY (1,2),
-Nombre char(15) not null UNIQUE constraint  CK_Rest_Nombre check (Nombre not like '[NX]%'),
+Nombre char(15) not null UNIQUE constraint  CK_Rest_Nombre check (Nombre not like '[NX]'),
 Numpelos int constraint CK_Rango check (Numpelos between 0 and 145000),
 TipoRopa char (1) Not null constraint CK_Caracteres check(TipoRopa in ('C','F','E','P','B','N')),
 NumSuerte TinyInt Not null constraint CK_NumerosSuerte check (NumSuerte%3=0),
-Minutos TinyInt not null constraint CK_Minutos check((Minutos between 20 and 85)or (Minutos between 120 and 185
+Minutos TinyInt not null constraint CK_Minutos check((Minutos between 20 and 85)or (Minutos between 120 and 185))
 )
-
 go
 use Ejemplos
 go
