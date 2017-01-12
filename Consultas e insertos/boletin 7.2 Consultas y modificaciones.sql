@@ -32,9 +32,19 @@ SELECT * FROM authors
 INSERT INTO authors (au_id ,au_lname,au_fname,contract )
 VALUES ('123-21-7568','Carson','Megan',1)
 --Inserta dos libros, escritos por el autor que has insertado antes y publicados por la editorial "Ramona publishers”.
-
+INSERT INTO titles(title_id,title)
+VALUES('ALE123', 'AYUDAR A APROBAR')
+INSERT INTO titleauthor(au_id,title_id)
+VALUES('123-21-7568','ALE123')
 --Modifica la tabla jobs para que el nivel mínimo sea 90.
 
+ALTER TABLE JOBS drop CK__jobs__max_lvl__2D27B809 
+ALTER TABLE JOBS WITH NOCHECK ADD CONSTRAINT CK_MAX_LVL
+CHECK(max_lvl=90) 
 --Crea una nueva editorial (publihers) con ID 9908, nombre Mostachon Books y sede en Utrera.
-
+INSERT INTO publishers(pub_id,pub_name,city)
+VALUES('9908','Mostachon Books','Utrera')
 --Cambia el nombre de la editorial con sede en Alemania para que se llame "Machen Wücher" y traslasde su sede a Stuttgart
+SELECT * FROM publishers WHERE country='Germany'
+update PUBLISHERS set city='Stuttgart', pub_name='Machen Wücher'
+where country='Germany'
