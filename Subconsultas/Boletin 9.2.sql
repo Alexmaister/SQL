@@ -36,13 +36,36 @@ where P.ProductName='Chartreuse verte' and P.ProductName='Ravioli Angelo'
 )
 --6. Número de unidades de cada categoría de producto que ha vendido cada
 --empleado.
+	
+select COUNT(P.ProductID)as [Numero de productos],P.CategoryID,E.EmployeeID from Products as P
+join [Order Details] as OD
+on P.ProductID=OD.ProductID
+join Orders as O 
+on OD.OrderID=O.OrderID
+join Employees as E
+on O.EmployeeID=E.EmployeeID
+group by P.CategoryID, E.EmployeeID
+order by P.CategoryID, E.EmployeeID
 --7. Total de ventas (US$) de cada categoría en el año 97.
+
 --8. Productos que han comprado más de un cliente del mismo país, indicando el
 --nombre del producto, el país y el número de clientes distintos de ese país que
 --lo han comprado.
+
+select distinct P.ProductName,COUNT (C.CustomerID)as [Número de clientes],C.Country from Products as P
+inner join [Order Details] as OD
+on P.ProductID=OD.ProductID
+inner join Orders as O
+on OD.OrderID=O.OrderID
+inner join Customers as C
+on O.CustomerID=C.CustomerID
+group by P.ProductName,C.Country
+having (COUNT(C.CustomerID)>1)
+
 --9. Total de ventas (US$) en cada país cada año.
 --10. Producto superventas de cada año, indicando año, nombre del producto,
 --categoría y cifra total de ventas.
+select * from Products 
 --11. Cifra de ventas de cada producto en el año 97 y su aumento o disminución
 --respecto al año anterior en US $ y en %.
 --12. Mejor cliente (el que más nos compra) de cada país.
