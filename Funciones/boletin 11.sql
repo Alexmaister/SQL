@@ -70,6 +70,48 @@ else print 'La tabla ya existe'
 --Entre los años 96 y 97 hay productos que han aumentado sus ventas y otros que las han disminuido. Queremos cambiar el precio unitario según la siguiente tabla:
 --Incremento de ventas
 
+create function ventasXAño(@año int)
+returns table as
+return(
+select P.ProductID,sum(OD.Quantity)as cantidad from Products as P
+inner join [Order Details] as OD
+on P.ProductID=OD.ProductID
+inner join Orders as O
+on OD.OrderID=O.OrderID
+where year(O.OrderDate)=@año
+group by P.ProductID
+
+)
+select * from ventasXAño(1996)
+
+alter function diferenciaVentasxAño(@añoComparador int,@añoComparado int)
+returns table as
+return (
+select A1.ProductID,((cast(A2.cantidad as float)/(A1.cantidad-A2.cantidad))*100) as DiferenciaTantoXCiento from ventasXAño(@añoComparado) as A1
+inner join ventasXAño(@añoComparador)as A2
+on A1.ProductID=A2.ProductID
+)
+
+select * from diferenciaVentasxAño(1996,1997)
+
+create procedure CambioDPrecioSegunVentas
+@año1 int,
+ @año2 int
+ as
+ begin 
+ update Products
+ set UnitPrice=case 
+ when (select DiferenciaTantoXCiento from diferenciaVentasxAño(@año1,@año2))<0 then UnitPrice-(10*UnitPrice/100)
+ when (select DiferenciaTantoXCiento from diferenciaVentasxAño(@año1,@año2)) between 10 and 50 then UnitPrice+(5*UnitPrice/100)
+ when (select DiferenciaTantoXCiento from diferenciaVentasxAño(@año1,@año2))>50 then 
+ case 
+ when  (10*UnitPrice/100)>2.25 
+ then UnitPrice+2.25 
+ else  UnitPrice+(10*UnitPrice/100)
+ end
+ end
+ 
+
 --Incremento de precio
 
 --Negativo
