@@ -87,31 +87,19 @@ select * from ventasXAño(1996)
 alter function diferenciaVentasxAño(@añoComparador int,@añoComparado int)
 returns table as
 return (
-select A1.ProductID,((cast(A2.cantidad as float)/(A1.cantidad-A2.cantidad))*100) as DiferenciaTantoXCiento from ventasXAño(@añoComparado) as A1
+select A1.ProductID as Producto ,((cast(A2.cantidad as float)/(A1.cantidad-A2.cantidad))*100) as DiferenciaTantoXCiento from ventasXAño(@añoComparado) as A1
 inner join ventasXAño(@añoComparador)as A2
 on A1.ProductID=A2.ProductID
 )
 
 select * from diferenciaVentasxAño(1996,1997)
 
-create procedure CambioDPrecioSegunVentas
-@año1 int,
- @año2 int
- as
- begin 
- update Products
- set UnitPrice=case 
- when (select DiferenciaTantoXCiento from diferenciaVentasxAño(@año1,@año2))<0 then UnitPrice-(10*UnitPrice/100)
- when (select DiferenciaTantoXCiento from diferenciaVentasxAño(@año1,@año2)) between 10 and 50 then UnitPrice+(5*UnitPrice/100)
- when (select DiferenciaTantoXCiento from diferenciaVentasxAño(@año1,@año2))>50 then 
- case 
- when  (10*UnitPrice/100)>2.25 
- then UnitPrice+2.25 
- else  UnitPrice+(10*UnitPrice/100)
- end
- end
- 
-
+/*cabecera: procedure CambioDPrecioSegunVentas (año1 int, año2 int)
+descripcion: procedimiento que modificará el precio de los productos , segun la diferencia de ventas ,como se indica en la tabla,
+entre dos años dados o un año y el año actual
+entradas: dos enteros, el segundo oopcional, se tomará el año actual por defecto, el primer año sera el año comparado, y el segundo con el cual se comparará
+precondiciones:los años introducidos deben ser años correspondiente a las ventas de la base de datos
+postcondiciones:se modificara el precio de los productos segun la tabla
 --Incremento de precio
 
 --Negativo
@@ -129,4 +117,35 @@ create procedure CambioDPrecioSegunVentas
 --Mayor del 50%
 
 --10% con un máximo de 2,25
+*/
+alter procedure CambioDPrecioSegunVentas
+@año1 int,
+ @año2 int=-1
+ as
+ begin 
+ if @año2 = -1
+	set @año2 = year(current_timestamp)
+ update Products
+ set UnitPrice=case 
+ when (DiferenciaTantoXCiento)<0 then UnitPrice-(10*UnitPrice/100)
+ when (DiferenciaTantoXCiento) between 10 and 50 then UnitPrice+(5*UnitPrice/100)
+ when (DiferenciaTantoXCiento)>50 then 
+ case 
+ when  (10*UnitPrice/100)>2.25 
+ then UnitPrice+2.25 
+ else  UnitPrice+(10*UnitPrice/100)
+ end
+ end
+ from diferenciaVentasxAño(@año1,@año2)
+ where ProductID=Producto
+ end
+ 
+
+ declare @año1 int
+ set @año1=1996
+ declare @año2 int
+ set @año1=1997
+
+
+ exec CambioDPrecioSegunVentas @año1,@año2
 
